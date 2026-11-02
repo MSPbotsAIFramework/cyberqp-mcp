@@ -4,175 +4,275 @@
     "ac": "AC1",
     "text": "Given a valid access token and base URL, when cyberqp_list_customers is called, then it returns the tenant's customers paginated with no password/OTP/install-token field on any item",
     "type": "auto",
-    "tests": ["tests/test_customers.py::test_list_customers_happy_path_no_credential_fields"]
+    "tests": [
+      "tests/test_customers.py::test_list_customers_happy_path_no_credential_fields"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-002",
     "ac": "AC1",
     "text": "Given limit=500 is requested, when cyberqp_list_customers is called, then the effective limit sent upstream is clamped to the 200 hard cap",
     "type": "auto",
-    "tests": ["tests/test_customers.py::test_list_customers_limit_clamped_to_hard_cap"]
+    "tests": [
+      "tests/test_customers.py::test_list_customers_limit_clamped_to_hard_cap"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-003",
     "ac": "AC2",
     "text": "Given an existing customer_id, when cyberqp_list_customer_accounts is called, then it returns accounts with id/displayName/accountType/enabled and no password field",
     "type": "auto",
-    "tests": ["tests/test_customers.py::test_list_customer_accounts_happy_path_no_password_field"]
+    "tests": [
+      "tests/test_customers.py::test_list_customer_accounts_happy_path_no_password_field"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-004",
     "ac": "AC2,AC13",
     "text": "Given a customer_id with zero accounts, when cyberqp_list_customer_accounts is called, then it returns an empty data list, not an error",
     "type": "auto",
-    "tests": ["tests/test_customers.py::test_list_customer_accounts_empty_is_not_an_error"]
+    "tests": [
+      "tests/test_customers.py::test_list_customer_accounts_empty_is_not_an_error"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-005",
     "ac": "AC14",
     "text": "Given a customer_id that does not exist, when cyberqp_list_customer_accounts is called, then it returns code=not_found",
     "type": "auto",
-    "tests": ["tests/test_customers.py::test_list_customer_accounts_unknown_customer_is_not_found"]
+    "tests": [
+      "tests/test_customers.py::test_list_customer_accounts_unknown_customer_is_not_found"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-006",
     "ac": "AC3",
     "text": "Given an existing customer_id, when cyberqp_get_customer_account_counts is called, then it returns counts broken down by account type",
     "type": "auto",
-    "tests": ["tests/test_customers.py::test_get_customer_account_counts_happy_path"]
+    "tests": [
+      "tests/test_customers.py::test_get_customer_account_counts_happy_path"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-007",
     "ac": "AC4",
     "text": "Given a customer_id and account_type, when cyberqp_list_jit_policies is called, then it returns policies with no credential material in any item",
     "type": "auto",
-    "tests": ["tests/test_jit.py::test_list_jit_policies_happy_path_no_credential_fields"]
+    "tests": [
+      "tests/test_jit.py::test_list_jit_policies_happy_path_no_credential_fields"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-008",
     "ac": "AC5",
     "text": "Given an existing customer_id, when cyberqp_list_customer_jit_accounts is called, then it returns accounts with enabled/expiration and no password or OTP field",
     "type": "auto",
-    "tests": ["tests/test_jit.py::test_list_customer_jit_accounts_happy_path_no_credential_fields"]
+    "tests": [
+      "tests/test_jit.py::test_list_customer_jit_accounts_happy_path_no_credential_fields"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-009",
     "ac": "AC5,AC13",
     "text": "Given a customer_id with no JIT accounts, when cyberqp_list_customer_jit_accounts is called, then it returns an empty data list, not an error",
     "type": "auto",
-    "tests": ["tests/test_jit.py::test_list_customer_jit_accounts_empty_is_not_an_error"]
+    "tests": [
+      "tests/test_jit.py::test_list_customer_jit_accounts_empty_is_not_an_error"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-010",
     "ac": "AC6",
     "text": "When cyberqp_list_tenant_jit_accounts is called with no customer filter, then it returns JIT accounts tenant-wide, paginated the same way as the per-customer tool",
     "type": "auto",
-    "tests": ["tests/test_jit.py::test_list_tenant_jit_accounts_happy_path"]
+    "tests": [
+      "tests/test_jit.py::test_list_tenant_jit_accounts_happy_path"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-011",
     "ac": "AC7",
     "text": "Given a customer_id/user_type with a matching JIT account, when cyberqp_check_jit_account is called, then it returns exists=true with no credential field",
     "type": "auto",
-    "tests": ["tests/test_jit.py::test_check_jit_account_exists_true"]
+    "tests": [
+      "tests/test_jit.py::test_check_jit_account_exists_true"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-012",
     "ac": "AC7",
     "text": "Given a customer_id/user_type with no matching JIT account, when cyberqp_check_jit_account is called, then it returns HTTP 200 with exists=false, not an error",
     "type": "auto",
-    "tests": ["tests/test_jit.py::test_check_jit_account_exists_false"]
+    "tests": [
+      "tests/test_jit.py::test_check_jit_account_exists_false"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-013",
     "ac": "AC8",
     "text": "Given customer/event-type/date filters, when cyberqp_list_events is called, then it returns matching audit records with technician/eventType/status/title fields",
     "type": "auto",
-    "tests": ["tests/test_events.py::test_list_events_happy_path_with_filters"]
+    "tests": [
+      "tests/test_events.py::test_list_events_happy_path_with_filters"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-014",
     "ac": "AC8,AC13",
     "text": "Given a filter combination matching zero events, when cyberqp_list_events is called, then it returns an empty data list, not an error",
     "type": "auto",
-    "tests": ["tests/test_events.py::test_list_events_empty_is_not_an_error"]
+    "tests": [
+      "tests/test_events.py::test_list_events_empty_is_not_an_error"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-015",
     "ac": "AC8",
     "text": "Given limit=500 is requested, when cyberqp_list_events is called, then the effective limit sent upstream is clamped to the 200 hard cap",
     "type": "auto",
-    "tests": ["tests/test_events.py::test_list_events_limit_clamped_to_hard_cap"]
+    "tests": [
+      "tests/test_events.py::test_list_events_limit_clamped_to_hard_cap"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-016",
     "ac": "AC9",
     "text": "When cyberqp_list_event_types is called, then it returns the reference list of event-type codes",
     "type": "auto",
-    "tests": ["tests/test_events.py::test_list_event_types_happy_path"]
+    "tests": [
+      "tests/test_events.py::test_list_event_types_happy_path"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-017",
     "ac": "AC10",
     "text": "When cyberqp_get_tenant_company_data is called, then it returns the tenant's CyberQP company metadata",
     "type": "auto",
-    "tests": ["tests/test_tenant.py::test_get_tenant_company_data_happy_path"]
+    "tests": [
+      "tests/test_tenant.py::test_get_tenant_company_data_happy_path"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-018",
     "ac": "AC11",
     "text": "Given a /mcp request missing X-CyberQp-Access-Token, when any tool is invoked, then the server returns 401 before any CyberQP call, naming the missing header",
     "type": "auto",
-    "tests": ["tests/test_auth.py::test_missing_access_token_header_returns_401_before_upstream_call"]
+    "tests": [
+      "tests/test_auth.py::test_missing_access_token_header_returns_401_before_upstream_call"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-019",
     "ac": "AC11",
     "text": "Given a /mcp request missing only X-CyberQp-Base-Url, when any tool is invoked, then the server returns 401 naming that specific header, not a generic message",
     "type": "auto",
-    "tests": ["tests/test_auth.py::test_missing_base_url_header_named_specifically"]
+    "tests": [
+      "tests/test_auth.py::test_missing_base_url_header_named_specifically"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-020",
     "ac": "AC12",
     "text": "Given CyberQP returns upstream 401 for an invalid/expired token, when any tool is invoked, then the tool returns code=unauthorized, retryable=false, with no raw upstream body in message",
     "type": "auto",
-    "tests": ["tests/test_auth.py::test_upstream_401_maps_to_unauthorized_without_leaking_body"]
+    "tests": [
+      "tests/test_auth.py::test_upstream_401_maps_to_unauthorized_without_leaking_body"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-021",
     "ac": "AC13",
     "text": "Given a tenant with zero customers, when cyberqp_list_customers is called, then it returns an empty data list, not an error",
     "type": "auto",
-    "tests": ["tests/test_customers.py::test_list_customers_empty_tenant_is_not_an_error"]
+    "tests": [
+      "tests/test_customers.py::test_list_customers_empty_tenant_is_not_an_error"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-022",
     "ac": "AC14",
     "text": "Given a customer_id that does not exist, when cyberqp_list_jit_policies is called, then it returns code=not_found",
     "type": "auto",
-    "tests": ["tests/test_jit.py::test_list_jit_policies_unknown_customer_is_not_found"]
+    "tests": [
+      "tests/test_jit.py::test_list_jit_policies_unknown_customer_is_not_found"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-023",
     "ac": "AC15",
     "text": "Static check: the server's registered tool set is exactly the 10 approved cyberqp_* names, all readOnlyHint=true, and none of the excluded endpoints (password/OTP/install-token/create/delete/enable/disable/identity-verification-push/event-submit) is ever requested anywhere in the test suite run",
     "type": "auto",
-    "tests": ["tests/test_tool_inventory.py::test_registered_tools_match_approved_read_only_set"]
+    "tests": [
+      "tests/test_tool_inventory.py::test_registered_tools_match_approved_read_only_set"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-024",
     "ac": "AC12",
     "text": "Given CyberQP returns upstream 429, when any tool is invoked, then the tool returns code=rate_limited, retryable=true",
     "type": "auto",
-    "tests": ["tests/test_auth.py::test_upstream_429_maps_to_rate_limited"]
+    "tests": [
+      "tests/test_auth.py::test_upstream_429_maps_to_rate_limited"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-025",
     "ac": "AC12",
     "text": "Given CyberQP returns upstream 5xx or a request times out, when any tool is invoked, then the tool returns code=upstream_error, retryable=true",
     "type": "auto",
-    "tests": ["tests/test_auth.py::test_upstream_5xx_or_timeout_maps_to_upstream_error"]
+    "tests": [
+      "tests/test_auth.py::test_upstream_5xx_or_timeout_maps_to_upstream_error"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (25 passed, 0 failed, 0.50s); see docs/tickets/PRD-21228.md Self-test section for the full run log. Test asserts the exact field set and pass/fail behavior described in this case."
   },
   {
     "id": "TC-CQP-026",
