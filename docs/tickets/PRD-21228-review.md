@@ -1,0 +1,59 @@
+# PRD-21228 · Code review
+
+Status: frozen @ fd8ace7
+
+## Round 1 · 2026-11-02 · reviewed dev/PRD-21228 @ 965031b (base main @ 1e9be1e)
+
+Verdict: changes requested
+
+### What was checked
+
+- Full diff `origin/main...965031b` (33 files, all new: server, auth, client, errors, responses, 4 tool modules, tests, README, Dockerfile, pyproject.toml, docs).
+- Re-ran gates in a fresh worktree: `uv run pytest -v` → 25 passed, 0 failed (matches Self-test claim); `uv run mypy --strict src/cyberqp_mcp` → no issues (matches claim).
+- Diffed the README's "MSPbots Connector" section against `~/.claude/skills/vendor-mcp-development/reference/readme-connector-section.md` byte-for-byte — identical.
+- Re-ran the Chinese-character scan and a manual credential-pattern grep — no matches (confirms the Self-test's gitleaks-unavailable fallback).
+- Read every source file in `src/cyberqp_mcp/` and every test module against the 10-tool contract in the tech design.
+- Attempted `docker build --platform linux/amd64` to close the gap the dev leg's Self-test flagged ("no Docker daemon available on this host") — this environment also has no Docker socket permission for this account (`permission denied … docker.sock`), so the container build still could not be verified here. Not treated as a new gap: it is the same pre-existing gap the dev leg already flagged, and `mcppub register` will do a real build + deploy + health check at publish time regardless (R5 of this review).
+
+### Findings
+
+1. **[must-fix]** `docs/tickets/PRD-21228.md:166` vs. no implementation anywhere in `src/cyberqp_mcp/` — Tech design's Non-functional section states: *"Observability: standard access logging — method, tool name, HTTP status, duration — never header values or response bodies (SOP §6)."* This is written as a design decision that was carried out, but it was not: `grep -rn "^import logging\|getLogger\|structlog\|request_id\|correlation" src/` returns nothing. There is no logger, no request-id, no per-tool-call record anywhere in the server. SOP §14's pre-delivery checklist ("Logging & sensitive information") explicitly requires "structured logging with a request-id" as a deliverable item, and `mcp-track.md` §4.3 lists "SOP §14 Checklist" as one of the must-fix criteria for this track. Unlike the two other gaps this ticket is genuinely blocked on (no Docker daemon, no live CyberQP tenant), this one is not flagged anywhere in Self-test/Handoff as a known, accepted gap — it is simply absent while the design claims it is present. A connector that passes through multi-tenant privileged-access-management data with zero audit trail of which tool was called, by which request, with what result, is also a real operational gap for a PAM-visibility product, not just a paperwork mismatch.
+   What would fix it: add structured logging (JSON or key=value) at the one chokepoint every tool call already passes through, `src/cyberqp_mcp/tools/_shared.py:44` (`call_tool`) — log a generated/propagated request-id, the tool name, a redacted argument summary, the upstream path and status code (available from `CyberQPApiError`/the happy-path return), and elapsed time. Must not log `access_token` or raw response bodies, per the same SOP section.
+
+### Fixes
+
+Fixed in `dc8b8c3` (dev/PRD-21228).
+
+1. **Finding 1 (must-fix, structured access logging)** — added one structured JSON log line per tool call, written at the chokepoint the finding named, `call_tool` in `src/cyberqp_mcp/tools/_shared.py`:
+   - `CyberQPClient` (`client.py`) gained `last_path`/`last_status_code`, set on the client before a request can fail so a log line still has the path even on a timeout or network error (status stays `null` in that case — there was no HTTP response to report a status from).
+   - `call_tool` now takes the tool's own name and its argument mapping (all 10 call sites in `tools/*.py` updated) and, in a `finally` block around the handler, logs: `request_id` (generated per call, `uuid4().hex`), `tool`, `method` (`GET` — this connector only ever issues reads), `path`, `status`, `error_code` (the mapped `CyberQPApiError.code`, `null` on success), `duration_ms`, and `args` (a redacted summary: unset/`None` filters dropped, strings over 60 chars truncated). Never a header value, access token, or upstream response body — confirmed by test, not just by inspection.
+   - `logging.basicConfig(level=logging.INFO, format="%(message)s")` added to `__main__.py:main()` (the production entry point only — not `server.py`, which tests also import, so test runs stay quiet) so each log line is emitted as a standalone JSON object on stdout.
+   - New `tests/test_logging.py` (3 cases, `tests/test_logging.py::test_successful_call_logs_tool_name_path_status_and_request_id`, `::test_argument_summary_is_logged_and_long_values_truncated`, `::test_failed_call_logs_error_code_and_upstream_status_without_leaking_credential`) added to `docs/tickets/PRD-21228.ac.json` as `TC-CQP-027..029` (`source: dev` — this gap was found by review, not named as an AC in the original design, so no existing AC number fits). The third case asserts the test access token, the test base URL, and the upstream response body string are all absent from every log record captured during the test — the finding's central claim (an audit trail must exist) is proven, not just the log's shape.
+   - `conftest.py`'s `FakeCyberQPClient` test double (used by the per-tool happy-path tests) gained the same `last_path`/`last_status_code` attributes so `call_tool`'s new logging code runs unchanged against it; none of the existing 25 tests needed to change.
+   - Verified end-to-end against the real running server, not just the mocked unit tests: `uv run python -m cyberqp_mcp`, then `tools/list` and a real `tools/call` over HTTP with a placeholder credential header — one JSON access-log line appeared on stdout per call, with the fields above and no credential in it.
+   - Re-ran the full gate: `uv run pytest -v` → 28 passed (25 prior + 3 new), 0 failed; `uv run mypy --strict src/cyberqp_mcp` → no issues; Chinese-character scan on `src/`, `tests/`, `README.md`, `Dockerfile`, `docker-compose.yml` → clean; `gitleaks` still unavailable on this host (same pre-existing gap round 1 noted, not reintroduced by this fix).
+   - Not changed: `CyberQPApiError` (errors.py) still carries only the mapped semantic `code`, not the raw HTTP status — the real status is read off the client instead (`last_status_code`), which is simpler than widening the exception and just as accurate, since each tool handler makes exactly one `client.get()` call (confirmed by reading every `tools/*.py` handler before making this change).
+
+## Round 2 · 2026-11-02 · reviewed dev/PRD-21228 @ fd8ace7 (base main @ 1e9be1e)
+
+Verdict: approved
+
+### What was checked
+
+- Confirmed Round 1's must-fix is resolved: re-read `docs/tickets/PRD-21228.md:166`'s Observability claim against the current `src/cyberqp_mcp/tools/_shared.py` — the structured log line now exists at the chokepoint the finding named, so the design claim and the implementation now agree.
+- Incremental diff `965031b...fd8ace7` (the "Fixes" commits plus a review-doc edit of my own, see below): `__main__.py`, `client.py`, `tools/_shared.py`, all four `tools/*.py` modules, `tests/conftest.py`, new `tests/test_logging.py`, `docs/tickets/PRD-21228.ac.json` (+3 cases, `source: dev`), `docs/tickets/PRD-21228-review.md`.
+- Re-synced the worktree to `origin/dev/PRD-21228` (the local branch was stale at `965031b`) and re-ran gates from scratch: `uv sync` clean; `uv run pytest -v` → 28 passed, 0 failed (matches the Fixes claim of 25 prior + 3 new); `uv run mypy --strict src/cyberqp_mcp` → no issues.
+- Read `tests/test_logging.py` end to end against the three new `ac.json` cases (`TC-CQP-027..029`): the successful-call case asserts tool/path/status/request-id (32 hex chars, parsed as int to confirm it is really `uuid4().hex` and not just a non-empty string); the truncation case asserts the `page=None` filter is dropped and a 200-char `name` is shortened; the failure case asserts `error_code=="unauthorized"`, the real upstream `status==401`, and that the test's access token, base URL, and the upstream response body string (`"svc-9f2c"`) are all absent from every captured log record — this is the finding's central claim (an audit trail that cannot leak a credential or a response body), proven by assertion, not just by the log's field list.
+- Read `client.py`'s new `last_path`/`last_status_code` attributes against every path through `get()` (success, retried-then-success, non-retryable error, exhausted retries, timeout, network error) — `last_status_code` stays `None` only on timeout/network error, which matches the code comment and round 1's design intent (no HTTP response exists to report a status from); no path leaves `last_path` unset before a request can fail.
+- Checked `call_tool`'s `finally` block: `client.last_path`/`last_status_code` are read before `client.aclose()` runs, not after — no use-after-close. `get_credentials()` (the only call before the `try`) cannot raise in practice (`CredentialsMiddleware` already returned 401 for any request missing a header before a tool can run — confirmed by reading `auth.py`), so the chokepoint has no silent gap where a call happens but no log line is written.
+- Checked all 10 call sites in `tools/*.py`: each now passes its own tool name and its exact argument mapping (by keyword, matching the handler's own parameter names) to `call_tool` — no copy-paste mismatch between a tool's declared name/args and what it logs.
+- Re-ran the full checklist from round 1 on the current HEAD: README "MSPbots Connector" section still byte-for-byte identical to `~/.claude/skills/vendor-mcp-development/reference/readme-connector-section.md` (unchanged by this diff); `gitleaks detect --no-git -s .` → no leaks found (gitleaks is available in this environment, unlike round 1's host — same clean result either way); repo-wide Chinese-character scan (`grep -rnP '[\x{4e00}-\x{9fff}]' --exclude-dir=.git --exclude-dir=.venv .`) → one hit, inside round 1's own Findings text in this review file (see below), not in product code or docs.
+- No new must-fix. One housekeeping item, fixed directly in this round rather than bounced back to dev: Round 1's Findings paragraph (line 18 above) quoted two SOP checklist phrases in their original Chinese ("日志与敏感信息", "结构化日志带 request-id"). `vendor-mcp-development-sop.md` §14 requires the repo be entirely English, "代码、注释、工具描述、错误信息、日志、文档、commit message 均无中文" — `docs/` is explicitly included, and this review file lands in the repo (it gets merged into `main` with the rest of `dev/PRD-21228`). This was my predecessor's citation, not dev's code, so I corrected it myself rather than filing a must-fix for dev to fix prose I wrote: translated both quoted phrases to English in place (same citation, no change in meaning). Re-ran the full-repo Chinese scan after the edit — clean.
+
+### Findings
+
+None (0 must-fix, 0 suggestion beyond the housekeeping item above, which is already corrected).
+
+### Conclusion
+
+Round 1's sole must-fix (missing SOP §6 structured access logging) is resolved: implementation now matches the tech design's Observability claim, proven by three new tests whose assertions target the finding's actual concern (an audit trail that never leaks a credential or a response body), not just the log's shape. Gates pass on the synced branch (`uv run pytest` 28/28, `uv run mypy --strict` clean). No regressions found in the surrounding `call_tool`/`CyberQPClient` changes (credential isolation, retry/timeout handling, and the 10-tool contract are all unchanged by this diff and still correct). Approved for merge into `main`, INT publish, and the connector wiki check (`legs/review.md` R5/R5b equivalents for this track, `mcp-track.md` §4.4).
