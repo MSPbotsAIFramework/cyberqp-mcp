@@ -78,7 +78,20 @@ def register(mcp: FastMCP) -> None:
                 "nextCursor": data.get("nextCursor"),
             }
 
-        return await call_tool(handler)
+        return await call_tool(
+            "cyberqp_list_events",
+            {
+                "customer_id": customer_id,
+                "account_id": account_id,
+                "event_type": event_type,
+                "status": status,
+                "start_date": start_date,
+                "end_date": end_date,
+                "limit": limit,
+                "cursor": cursor,
+            },
+            handler,
+        )
 
     @tool(mcp, annotations=READ_ONLY)
     async def cyberqp_list_event_types() -> str:
@@ -89,4 +102,4 @@ def register(mcp: FastMCP) -> None:
             items = list(data.get("data", []))
             return {"data": items, "totalItems": data.get("totalItems", len(items))}
 
-        return await call_tool(handler)
+        return await call_tool("cyberqp_list_event_types", {}, handler)

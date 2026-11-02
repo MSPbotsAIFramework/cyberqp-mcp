@@ -22,4 +22,4 @@ def register(mcp: FastMCP) -> None:
             data = await client.get("/api/v1/tenants/company-data")
             return {"data": data.get("data", {})}
 
-        return await call_tool(handler)
+        return await call_tool("cyberqp_get_tenant_company_data", {}, handler)

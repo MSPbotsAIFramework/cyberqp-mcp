@@ -57,7 +57,11 @@ def register(mcp: FastMCP) -> None:
             items = [_flatten_policy(item) for item in data.get("data", [])]
             return {"data": items, "maxCount": data.get("maxCount", len(items))}
 
-        return await call_tool(handler)
+        return await call_tool(
+            "cyberqp_list_jit_policies",
+            {"customer_id": customer_id, "account_type": account_type},
+            handler,
+        )
 
     @tool(mcp, annotations=READ_ONLY)
     async def cyberqp_list_customer_jit_accounts(
@@ -83,7 +87,16 @@ def register(mcp: FastMCP) -> None:
             items = [_flatten_account(item) for item in data.get("data", [])]
             return {"data": items, "maxCount": data.get("maxCount", len(items))}
 
-        return await call_tool(handler)
+        return await call_tool(
+            "cyberqp_list_customer_jit_accounts",
+            {
+                "customer_id": customer_id,
+                "search_text": search_text,
+                "limit": limit,
+                "page": page,
+            },
+            handler,
+        )
 
     @tool(mcp, annotations=READ_ONLY)
     async def cyberqp_list_tenant_jit_accounts(
@@ -107,7 +120,11 @@ def register(mcp: FastMCP) -> None:
             items = [_flatten_account(item) for item in data.get("data", [])]
             return {"data": items, "maxCount": data.get("maxCount", len(items))}
 
-        return await call_tool(handler)
+        return await call_tool(
+            "cyberqp_list_tenant_jit_accounts",
+            {"search_text": search_text, "limit": limit, "page": page},
+            handler,
+        )
 
     @tool(mcp, annotations=READ_ONLY)
     async def cyberqp_check_jit_account(
@@ -130,4 +147,8 @@ def register(mcp: FastMCP) -> None:
             )
             return {"exists": data.get("account") is not None}
 
-        return await call_tool(handler)
+        return await call_tool(
+            "cyberqp_check_jit_account",
+            {"customer_id": customer_id, "user_type": user_type, "agent_id": agent_id},
+            handler,
+        )

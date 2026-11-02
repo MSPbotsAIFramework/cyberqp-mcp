@@ -83,11 +83,19 @@ class CyberQPClient:
             ),
             transport=transport,
         )
+        # Last request's path/status, for the access-log line the tool-call
+        # boundary writes (tools/_shared.py:call_tool) -- never a credential,
+        # see SOP section 6. One request per tool call in this server, so a
+        # single pair of attributes is enough; set before the request can
+        # fail so a log line still has the path even on timeout/network error.
+        self.last_path: str | None = None
+        self.last_status_code: int | None = None
 
     async def aclose(self) -> None:
         await self._client.aclose()
 
     async def get(self, path: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
+        self.last_path = path
         clean_params = {k: v for k, v in (params or {}).items() if v is not None}
         attempt = 0
         while True:
@@ -105,6 +113,7 @@ class CyberQPClient:
                 ) from exc
 
             if response.status_code < 400:
+                self.last_status_code = response.status_code
                 return response.json() if response.content else {}
 
             if response.status_code in _RETRYABLE_STATUS and attempt < _MAX_RETRIES:
@@ -112,4 +121,5 @@ class CyberQPClient:
                 await asyncio.sleep(_retry_delay(response, attempt))
                 continue
 
+            self.last_status_code = response.status_code
             raise _map_status_to_error(response)

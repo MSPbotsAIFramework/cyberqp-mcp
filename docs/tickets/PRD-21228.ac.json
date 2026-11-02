@@ -287,5 +287,41 @@
     "expect": "tools/list returns exactly the 10 cyberqp_* tools; cyberqp_list_customers returns HTTP-level success with a data array (possibly empty) and no error envelope",
     "result": "untested",
     "notes": "needs a real vendor account -- not available from the design or dev flow; not blocking 6b/6c per mcp-track.md section 3"
+  },
+  {
+    "id": "TC-CQP-027",
+    "ac": "NFR-Observability (review round 1 must-fix, docs/tickets/PRD-21228-review.md)",
+    "text": "Given a successful tool call, when it completes, then one structured JSON access-log line is written with tool name, HTTP method, upstream path, status, duration, and a request-id, and it contains no credential or response body.",
+    "type": "auto",
+    "tests": [
+      "tests/test_logging.py::test_successful_call_logs_tool_name_path_status_and_request_id"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (28 passed, 0 failed, 1.13s); also verified end-to-end against the real running server (uv run python -m cyberqp_mcp, tools/call over HTTP) -- one access-log JSON line per call, printed to stdout. See docs/tickets/PRD-21228-review.md Fixes (round 1).",
+    "source": "dev"
+  },
+  {
+    "id": "TC-CQP-028",
+    "ac": "NFR-Observability (review round 1 must-fix, docs/tickets/PRD-21228-review.md)",
+    "text": "Given a tool call with a long string argument, when it is logged, then the argument summary truncates it and omits unset (None) filters -- the log carries a redacted summary, not the raw call.",
+    "type": "auto",
+    "tests": [
+      "tests/test_logging.py::test_argument_summary_is_logged_and_long_values_truncated"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (28 passed, 0 failed, 1.13s). See docs/tickets/PRD-21228-review.md Fixes (round 1).",
+    "source": "dev"
+  },
+  {
+    "id": "TC-CQP-029",
+    "ac": "NFR-Observability (review round 1 must-fix, docs/tickets/PRD-21228-review.md)",
+    "text": "Given an upstream error (e.g. 401), when the tool call fails, then the access-log line carries the mapped error_code and the real upstream HTTP status, and never the access token, base URL, or upstream response body.",
+    "type": "auto",
+    "tests": [
+      "tests/test_logging.py::test_failed_call_logs_error_code_and_upstream_status_without_leaking_credential"
+    ],
+    "result": "pass",
+    "evidence": "uv run pytest -v (28 passed, 0 failed, 1.13s); asserts the test access token, base URL, and the upstream response body string are all absent from every log record emitted during the test. See docs/tickets/PRD-21228-review.md Fixes (round 1).",
+    "source": "dev"
   }
 ]

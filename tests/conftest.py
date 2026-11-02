@@ -62,12 +62,19 @@ class FakeCyberQPClient:
         self.base_url = base_url
         self._responses = responses
         self.calls: list[tuple[str, dict[str, Any]]] = []
+        # Mirrors the real CyberQPClient's access-log attributes (client.py) so
+        # call_tool's finally-block logging works unchanged against this double.
+        self.last_path: str | None = None
+        self.last_status_code: int | None = None
 
     async def get(self, path: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
         self.calls.append((path, dict(params or {})))
+        self.last_path = path
         outcome = self._responses[path]
         if isinstance(outcome, Exception):
+            self.last_status_code = None
             raise outcome
+        self.last_status_code = 200
         return outcome
 
     async def aclose(self) -> None:

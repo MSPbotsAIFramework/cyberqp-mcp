@@ -59,7 +59,11 @@ def register(mcp: FastMCP) -> None:
             items = [pick(_flatten(item), _CUSTOMER_FIELDS) for item in data.get("data", [])]
             return {"data": items, "totalItems": data.get("totalItems", len(items))}
 
-        return await call_tool(handler)
+        return await call_tool(
+            "cyberqp_list_customers",
+            {"directory_type": directory_type, "name": name, "limit": limit, "page": page},
+            handler,
+        )
 
     @tool(mcp, annotations=READ_ONLY)
     async def cyberqp_list_customer_accounts(
@@ -93,7 +97,16 @@ def register(mcp: FastMCP) -> None:
                 "nextCursor": data.get("nextCursor"),
             }
 
-        return await call_tool(handler)
+        return await call_tool(
+            "cyberqp_list_customer_accounts",
+            {
+                "customer_id": customer_id,
+                "account_type": account_type,
+                "limit": limit,
+                "cursor": cursor,
+            },
+            handler,
+        )
 
     @tool(mcp, annotations=READ_ONLY)
     async def cyberqp_get_customer_account_counts(customer_id: str) -> str:
@@ -110,4 +123,6 @@ def register(mcp: FastMCP) -> None:
             counts.pop("guid", None)
             return {"data": counts}
 
-        return await call_tool(handler)
+        return await call_tool(
+            "cyberqp_get_customer_account_counts", {"customer_id": customer_id}, handler
+        )
